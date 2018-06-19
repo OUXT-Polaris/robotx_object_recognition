@@ -53,11 +53,24 @@ def main():
 
     batch_size = 32
     num_classes = 4
-    gen = api.get_OUXT_ImageGeneratorDir(
-            folder='OUXT_imageData/dataset',
-            shape=data_shape, 
-            batch_size=batch_size, 
-            data_format=data_format)
+
+    from keras.preprocessing.image import ImageDataGenerator
+    datagen = ImageDataGenerator(
+            data_format=data_format,
+            rotation_range=40,
+            width_shift_range=0.2,
+            height_shift_range=0.2,
+            rescale=1./255,
+            zoom_range=0.2,
+            horizontal_flip=True,
+            fill_mode='nearest')
+    gen = datagen.flow_from_directory(
+            'OUXT_imageData/test_dataset',
+            target_size=data_shape,
+            color_mode='rgb',
+            classes=['green', 'other', 'red', 'white'],
+            batch_size=batch_size,
+            class_mode='categorical')
 
     # modelの構築
     model = Sequential()
@@ -76,8 +89,8 @@ def main():
     print('compiled')
 
     # 学習
-    hd_orig = 'test_run_1.hdf5'
     hd = 'test_run_1_trained_in_rb.hdf5'
+    hd2 = 'test_run_1.hdf5'
     import os
     if os.path.exists(hd):
         print('loading')
@@ -92,22 +105,25 @@ def main():
         #         validation_data=(x_test, y_test))
 
         # save
-        model.save_weights(hd_orig)
+        model.save_weights(hd2)
 
     # score = model.evaluate(x_test, y_test, verbose=0)
     # score = model.evaluate_generator(gen, steps=16)
     # print('evaluate', score)
+
     import matplotlib.pyplot as plt
     import numpy as np
+    import cv2
     np.set_printoptions(precision=3, suppress=True)
     for x, y in gen:
         y_pred = model.predict(x, batch_size=batch_size)
         print(y.shape, y_pred.shape)
         for i in range(x.shape[0]):
             print(y[i], y_pred[i])
-            plt.imshow(x[i])
-            # plt.title('pred:{}(conf: {}) true:{}'.format(np.argmax(y_pred[i]), np.max(y_pred[i]), np.argmax(y[i])))
-            plt.show()
+            cv2.imshow('hoge', cv2.cvtColor(x[i], cv2.COLOR_RGB2BGR))
+            cv2.waitKey(0)
+            # plt.imshow(x[i])
+            # plt.show()
 
     if True:
         return 0
