@@ -43,7 +43,6 @@ def dataload():
 def main():
     # dataload()
     # TODO データのロードのパス、categoricalにする、フルカラー画像の場合はこれでいいの？
-    from OUXT_imageData import api
     data_format = K.image_data_format()
     data_shape = (128, 128)
     if data_format == 'channels_first':
@@ -111,22 +110,38 @@ def main():
     # score = model.evaluate_generator(gen, steps=16)
     # print('evaluate', score)
 
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import cv2
-    np.set_printoptions(precision=3, suppress=True)
-    for x, y in gen:
-        y_pred = model.predict(x, batch_size=batch_size)
-        print(y.shape, y_pred.shape)
-        for i in range(x.shape[0]):
-            print(y[i], y_pred[i])
-            cv2.imshow('hoge', cv2.cvtColor(x[i], cv2.COLOR_RGB2BGR))
-            cv2.waitKey(0)
-            # plt.imshow(x[i])
-            # plt.show()
+    # fpsを測定する
+    N = 0
+    import time
+    class EndLoop(Exception):
+        pass
 
-    if True:
-        return 0
+    try:
+        start = time.time()
+        for x, y in gen:
+            for i in range(x.shape[0]):
+                y_pred = model.predict(x[i].reshape([1] + list(x[i].shape)), batch_size=1)
+                print(i, y_pred[0], y[i])
+                N += 1
+                if N >= 1000:
+                    raise EndLoop
+    except EndLoop:
+        print('ended')
+    print('s', 1000 / (time.time() - start))
+
+    # import matplotlib.pyplot as plt
+    # import numpy as np
+    # import cv2
+    # np.set_printoptions(precision=3, suppress=True)
+    # for x, y in gen:
+    #     y_pred = model.predict(x, batch_size=batch_size)
+    #     print(y.shape, y_pred.shape)
+    #     for i in range(x.shape[0]):
+    #         print(y[i], y_pred[i])
+    #         cv2.imshow('hoge', cv2.cvtColor(x[i], cv2.COLOR_RGB2BGR))
+    #         cv2.waitKey(0)
+    #         # plt.imshow(x[i])
+    #         # plt.show()
 
     # エクスポートするよ
     print('export session')
@@ -150,17 +165,14 @@ def main():
             ksess.graph.as_graph_def(), 
             outputName)
 
-    filename = "keras_mnist_cnn.pb"
+    filename = 'keras_object_recog.pb'
     graph_io.write_graph(constant_graph, "./", filename, as_text=False)
     print('saved in', filename)
 
 
 def use_from_tensorflow():
-    # MNISTのデータを読み込む
-    dataload()
-
     import tensorflow as tf
-    filename = "keras_mnist_cnn.pb"
+    filename = 'keras_object_recog.pb'
     graph = tf.Graph()
     graph_def = tf.GraphDef()
 
@@ -175,14 +187,40 @@ def use_from_tensorflow():
     learnPhase = graph.get_operation_by_name('import/dropout_1/keras_learning_phase')
     outLayer   = graph.get_operation_by_name('import/output0')
 
-    print('shape', x_test.shape)
-    with tf.Session(graph=graph) as sess:
-        results = sess.run(outLayer.outputs[0],
-                {inLayer.outputs[0]: x_test,
-                    learnPhase.outputs[0]: 0})
+    # datageneratorだけkerasの物を使う
+    from keras.preprocessing.image import ImageDataGenerator
+    data_format = K.image_data_format()
+    data_shape = (128, 128)
+    batch_size = 32
+    datagen = ImageDataGenerator(
+            data_format=data_format,
+            rotation_range=40,
+            width_shift_range=0.2,
+            height_shift_range=0.2,
+            rescale=1./255,
+            zoom_range=0.2,
+            horizontal_flip=True,
+            fill_mode='nearest')
+    gen = datagen.flow_from_directory(
+            'OUXT_imageData/test_dataset',
+            target_size=data_shape,
+            color_mode='rgb',
+            classes=['green', 'other', 'red', 'white'],
+            batch_size=batch_size,
+            class_mode='categorical')
 
-    print(results.shape)
-    print(y_test.shape)
+    N = 0
+    import numpy as np
+    np.set_printoptions(precision=3, suppress=True)
+    with tf.Session(graph=graph) as sess:
+        for x, y in gen:
+            y_pred = sess.run(outLayer.outputs[0],
+                    {inLayer.outputs[0]: x,
+                        learnPhase.outputs[0]: 0})
+            print(y_pred, y)
+            N += 1
+            if N > 10:
+                break
 
 def port_model():
     import keras.backend.tensorflow_backend as KTF
@@ -193,5 +231,5 @@ def port_model():
     tf.train.write_graph(sess.graph.as_graph_def(), "models/", "graph.pb")
 
 if __name__ == '__main__':
-    main()
-    # use_from_tensorflow()
+    # main()
+    use_from_tensorflow()

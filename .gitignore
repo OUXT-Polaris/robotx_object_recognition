@@ -1,2 +1,9 @@
 MNIST_data/
 .DS_Store
+
+# trianed models
+*.pb
+*.hdf5
+
+# python
+__pycache__/
