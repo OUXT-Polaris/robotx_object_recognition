@@ -30,6 +30,6 @@ https://drive.google.com/open?id=1jDuOb2zpX2N8MwJxrDY__jxIEnbZpGsz
     - 背景画像を学習させて背景クラスを作る
     - convolutionが効いているかどうかの確認
 - ROS化
-    - `function(x): (画像x: 2d ndarray) -> (その画像が所属する可能性が一番高いクラス: int)`という関数を内側でコールするようなROSのノード？をpythonで作っていただけるととてもありがたいです。
-        - 上の関数に投げる画像のサイズはなんでも大丈夫です。(ROIに合わせてトリミングした画像でも、画像全体+ROI指定のピクセルでもどちらでも)
+    - `function(x): (画像x: 2d ndarray) -> (各クラスに所属する確率の分布: [float])`という関数を内側でコールするROSのpythonノード
+        - ROIに従って切り出した後の画像をもらって、CNNの出力を返すようなノードという感じ
 
