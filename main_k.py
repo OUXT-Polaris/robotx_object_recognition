@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 reference:
 https://qiita.com/yukiB/items/1ea109eceda59b26cd64#4-kerastensorflow%E3%81%A7%E4%BD%9C%E6%88%90%E3%81%97%E3%81%9F%E3%83%A2%E3%83%87%E3%83%AB%E3%82%92c%E3%81%8B%E3%82%89%E5%AE%9F%E8%A1%8C
 """
-
 import tensorflow as tf
 from tensorflow.python.framework import graph_util, graph_io
 import keras
@@ -64,7 +62,7 @@ def main():
             horizontal_flip=True,
             fill_mode='nearest')
     gen = datagen.flow_from_directory(
-            'OUXT_imageData/test_dataset',
+            '../OUXT_imageData/test_dataset',
             target_size=data_shape,
             color_mode='rgb',
             classes=['green', 'other', 'red', 'white'],
@@ -202,7 +200,7 @@ def use_from_tensorflow():
             horizontal_flip=True,
             fill_mode='nearest')
     gen = datagen.flow_from_directory(
-            'OUXT_imageData/test_dataset',
+            '../OUXT_imageData/test_dataset',
             target_size=data_shape,
             color_mode='rgb',
             classes=['green', 'other', 'red', 'white'],
