@@ -200,7 +200,8 @@ def use_from_tensorflow():
             horizontal_flip=True,
             fill_mode='nearest')
     gen = datagen.flow_from_directory(
-            '../OUXT_imageData/test_dataset',
+            # '../OUXT_imageData/test_dataset',
+            '../datasets/main',
             target_size=data_shape,
             color_mode='rgb',
             classes=['green', 'other', 'red', 'white'],
