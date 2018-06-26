@@ -170,10 +170,21 @@ def main():
 
 def use_from_tensorflow():
     import tensorflow as tf
-    filename = 'keras_object_recog.pb'
+
+    # もし重み(pbファイル)がなければgdriveからダウンロードする
+    # ../data/trained_weight.jsonに最新の重みのurlを記載する
+    filename = '../data/trained_model.pb'
+    settingFileName = '../data/trained_weight.json'
+    import json
+    import os
+    import urllib.request
+    with open(settingFileName, 'r') as f:
+        datasetInfo = json.load(f)
+    if !os.path.isfile(filename):
+        urllib.request.urlretrieve('https://drive.google.com/uc?id=' + datasetInfo['id'], filename)
+
     graph = tf.Graph()
     graph_def = tf.GraphDef()
-
     with open(filename, 'rb') as f:
         graph_def.ParseFromString(f.read())
     with graph.as_default():
