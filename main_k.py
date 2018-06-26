@@ -180,7 +180,7 @@ def use_from_tensorflow():
     import urllib.request
     with open(settingFileName, 'r') as f:
         datasetInfo = json.load(f)
-    if !os.path.isfile(filename):
+    if not os.path.isfile(filename):
         urllib.request.urlretrieve('https://drive.google.com/uc?id=' + datasetInfo['id'], filename)
 
     graph = tf.Graph()
