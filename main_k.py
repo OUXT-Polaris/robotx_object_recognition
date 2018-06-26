@@ -174,7 +174,7 @@ def use_from_tensorflow():
     # もし重み(pbファイル)がなければgdriveからダウンロードする
     # ../data/trained_weight.jsonに最新の重みのurlを記載する
     filename = '../data/trained_model.pb'
-    settingFileName = '../data/trained_weight.json'
+    settingFileName = '../data/trained_model.json'
     import json
     import os
     import urllib.request
